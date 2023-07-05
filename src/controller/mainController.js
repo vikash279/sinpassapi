@@ -28,4 +28,4 @@ const getProfile = async function (req, res){
       }
 }
 
-module.exports = { apiCheck, getProfile }
+module.exports = { apiIndex, apiCheck, getProfile }
