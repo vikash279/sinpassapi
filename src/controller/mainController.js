@@ -1,5 +1,9 @@
 const axios = require('axios');
 
+const apiIndex = async function (req, res){
+    res.status(200).json('Welcome to the SingPass Node API');
+}
+
 const apiCheck = async function (req, res){
     res.status(200).json('Welcome to the SingPass API');
 }

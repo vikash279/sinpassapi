@@ -4,6 +4,7 @@ const axios = require('axios');
 
 const mainController = require("../controller/mainController");
 
+route.get("/",mainController.apiIndex)
 route.get("/check",mainController.apiCheck)
 route.post("/getprofile",mainController.getProfile)
 
