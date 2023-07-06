@@ -13,10 +13,10 @@ const getProfile = async function (req, res){
       let config = {
         method: 'get',
         maxBodyLength: Infinity,
-        url: 'https://sandbox.api.myinfo.gov.sg/com/v4/person-sample',
-        params: {
-            uinfin: uinfin
-        },
+        url: 'https://sandbox.api.myinfo.gov.sg/com/v4/person-sample/'+uinfin,
+        // params: {
+        //     uinfin: uinfin
+        // },
         headers: {}
       };
 
