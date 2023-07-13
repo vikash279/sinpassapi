@@ -43,6 +43,31 @@ const getEnv = async function (req, res){
   }
 }
 
+const authorize = async function (req, res){
+  try {
+    const clientId = req.body.clientId;
+    const scope = req.body.scope;
+    const purpose_id = req.body.purpose_id;
+    const method = "S256";
+    const redirectUrl = req.body.redirectUrl;
+    const authApiUrl = req.body.authApiUrl;
+    let pkceCodePair = connector.generatePKCECodePair();
+    var authorizeUrl = authApiUrl + "?client_id=" + clientId +
+						"&scope=" + scope +
+						"&purpose_id=" + purpose_id +
+						"&code_challenge=" + pkceCodePair.codeChallenge +
+						"&code_challenge_method=" + method +
+						"&redirect_uri=" + redirectUrl;
+    //res.status(200).send(pkceCodePair.codeChallenge);
+    res.status(200).send(authorizeUrl);
+  } catch (error) {
+    console.log("Error".red, error);
+    res.status(500).send({
+      error: error,
+    });
+  }
+}
+
 const getProfile = async function (req, res){
       const uinfin = req.body.uinfin;
       let config = {
@@ -63,4 +88,4 @@ const getProfile = async function (req, res){
       }
 }
 
-module.exports = { apiIndex, apiCheck, getEnv, getProfile }
+module.exports = { apiIndex, apiCheck, getEnv, authorize, getProfile }
