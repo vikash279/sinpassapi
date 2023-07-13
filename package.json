@@ -6,8 +6,7 @@
   "author": "Vikash Rai",
   "license": "ISC",
   "scripts": {
-    "start": "nodemon test",
-    "test": "node src/index.js test",
+    "start": "nodemon src/index.js",
     "build": "echo \"Add your build command here\""
   },
   "dependencies": {
