@@ -75,6 +75,52 @@ const authorize = async function (req, res){
   }
 }
 
+const getPersonData = async function (req, res){
+  try{
+    var authCode = req.body.authCode;
+    var codeVerifier = req.body.codeVerifier;
+
+    const privateKeyPath = path.resolve(__dirname, '../cert/your-sample-app-signing-private-key.pem');
+
+    let privateSigningKey = fs.readFileSync(privateKeyPath, 'utf8');
+
+    // let privateSigningKey = fs.readFileSync(
+    //   config.APP_CONFIG.DEMO_APP_CLIENT_PRIVATE_SIGNING_KEY,
+    //   "utf8"
+    // );
+
+    let privateEncryptionKeys = [];
+    const privateKeyPathEncryption = path.resolve(__dirname, '../cert/encryption-private-keys/');
+    // retrieve private encryption keys and decode to utf8 from FS, insert all keys to array
+    console.log(privateKeyPathEncryption);
+    readFiles(
+      path.resolve(__dirname, '../cert/encryption-private-keys/'),
+      (filename, content) => {
+        privateEncryptionKeys.push(content);
+      },
+      (err) => {
+        throw err;
+      }
+    );
+
+    let personData = await connector.getMyInfoPersonData(
+      authCode,
+      codeVerifier,
+      privateSigningKey,
+      privateEncryptionKeys
+    );
+
+    res.status(200).send(personData); //return personData
+  } catch (error) {
+    console.log("---MyInfo NodeJs Library Error---".red);
+    console.log(error);
+    res.status(500).send({
+      error: error,
+    });
+  }
+
+}
+
 const constant = {
   HTTP_METHOD: {
     POST: 'POST',
@@ -88,7 +134,6 @@ const getAccessToken = async function (req, res) {
     const authCode = req.body.authCode;
     const privateSigningKey = config.APP_CONFIG.DEMO_APP_CLIENT_PRIVATE_SIGNING_KEY;
     const codeVerifier = req.body.codeVerifier;
-   // const sessionPopKeyPair = req.body.sessionPopKeyPair;
 
     const tokenUrl = config.MYINFO_CONNECTOR_CONFIG.TOKEN_URL;
     const redirectUrl = config.APP_CONFIG.DEMO_APP_CALLBACK_URL;
@@ -99,8 +144,8 @@ const getAccessToken = async function (req, res) {
     const method = constant.HTTP_METHOD.POST;
     const clientAssertionType = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer";
     const sessionPopKeyPair = await generateEphemeralKey();
-    const jktThumbprint =  await generateJwkThumbprint(sessionPopKeyPair.publicKey);
-    const clientAssertion = await generateClientAssertion(tokenUrl, clientId, jktThumbprint);
+    const jktThumbprint = await generateJwkThumbprint(sessionPopKeyPair.publicKey);
+    const clientAssertion = await generateClientAssertion(tokenUrl, clientId, privateSigningKey, jktThumbprint);
 
     // Assemble params for Token API
     const params = qs.stringify({
@@ -109,30 +154,54 @@ const getAccessToken = async function (req, res) {
       redirect_uri: redirectUrl,
       client_id: clientId,
       code_verifier: codeVerifier,
-      client_assertion_type: clientAssertionType
-      // client_assertion: clientAssertion
+      client_assertion_type: clientAssertionType,
+      client_assertion: clientAssertion,
     });
 
-   const ath = await generateAth(clientAssertion);
-   const dPoP = await generateDpop(tokenUrl, ath, constant.HTTP_METHOD.POST, sessionPopKeyPair);
-   res.status(200).send(dPoP);
-  //  const headers = {
-  //     "Content-Type": contentType,
-  //     "Cache-Control": cacheCtl,
-  //     "DPoP": dPoP
-  //   };
+    const ath = await generateAth(clientAssertion);
+    const dPoP = await generateDpop(tokenUrl, ath, constant.HTTP_METHOD.POST, sessionPopKeyPair);
 
-  //   // Invoke Token API
-  //   const response = await axios.post(tokenUrl, params, { headers });
+    const headers = {
+      "Content-Type": contentType,
+      "Cache-Control": cacheCtl,
+      "DPoP": dPoP,
+    };
 
-  //   res.status(200).send(response.data);
+    // Invoke Token API
+    const response = await axios.post(tokenUrl, params, { headers });
+
+    res.status(200).send(response.data);
   } catch (error) {
     console.log("Error".red, error);
+    if (error.response && error.response.data) {
+      console.log("Response data:", error.response.data);
+    }
     res.status(500).send({
       error: error,
     });
   }
 }
+
+//function to read multiple files from a directory
+function readFiles(dirname, onFileContent, onError) {
+  fs.readdir(dirname, function (err, filenames) {
+    if (err) {
+      onError(err);
+      return;
+    }
+    filenames.forEach(function (filename) {
+      fs.readFile(path.join(dirname, filename), "utf8", function (err, content) {
+        if (err) {
+          onError(err);
+          return;
+        }
+        onFileContent(filename, content);
+      });
+    });
+  });
+}
+
+
 
 async function generateEphemeralKey() {
   let options = {
@@ -342,4 +411,4 @@ const getProfile = async function (req, res){
       }
 }
 
-module.exports = { apiIndex, apiCheck, getEnv, authorize, getAccessToken, getProfile }
+module.exports = { apiIndex, apiCheck, getEnv, authorize, getAccessToken, getPersonData, getProfile }

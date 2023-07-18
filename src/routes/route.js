@@ -10,6 +10,7 @@ route.post("/getprofile",mainController.getProfile)
 route.get("/getenv",mainController.getEnv)
 route.post("/authorize",mainController.authorize)
 route.post("/getaccesstoken",mainController.getAccessToken)
+route.post("/getpersondata",mainController.getPersonData)
 
 
 
