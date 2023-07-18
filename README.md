@@ -26,3 +26,11 @@ G1612353L
 
 Note:
 This API will take in the actual UINFIN as the sub for easier reference, however in the actual implementation UUID of the user will be used instead.
+
+Note : Install Node on your system.
+
+Steps to install app:
+
+1. Clone this repo.
+2. run "npm install".
+3. run "npm start test"

@@ -84,11 +84,6 @@ const getPersonData = async function (req, res){
 
     let privateSigningKey = fs.readFileSync(privateKeyPath, 'utf8');
 
-    // let privateSigningKey = fs.readFileSync(
-    //   config.APP_CONFIG.DEMO_APP_CLIENT_PRIVATE_SIGNING_KEY,
-    //   "utf8"
-    // );
-
     let privateEncryptionKeys = [];
     const privateKeyPathEncryption = path.resolve(__dirname, '../cert/encryption-private-keys/');
     // retrieve private encryption keys and decode to utf8 from FS, insert all keys to array
