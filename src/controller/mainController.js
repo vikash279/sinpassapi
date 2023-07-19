@@ -33,6 +33,7 @@ const getEnv = async function (req, res){
         error: "Missing Client ID",
       });
     } else {
+      let pkceCodePair = connector.generatePKCECodePair();
       res.status(200).send({
         clientId: config.APP_CONFIG.DEMO_APP_CLIENT_ID,
         redirectUrl: config.APP_CONFIG.DEMO_APP_CALLBACK_URL,
@@ -40,6 +41,8 @@ const getEnv = async function (req, res){
         purpose_id: config.APP_CONFIG.DEMO_APP_PURPOSE_ID,
         authApiUrl: config.APP_CONFIG.MYINFO_API_AUTHORIZE,
         subentity: config.APP_CONFIG.DEMO_APP_SUBENTITY_ID,
+        code_challenge: pkceCodePair.codeChallenge,
+        code_verifier: pkceCodePair.codeVerifier
       });
     }
   } catch (error) {
@@ -58,11 +61,13 @@ const authorize = async function (req, res){
     const method = "S256";
     const redirectUrl = req.body.redirectUrl;
     const authApiUrl = req.body.authApiUrl;
-    let pkceCodePair = connector.generatePKCECodePair();
+    const codeChallenge = req.body.code_challenge;
+   // let pkceCodePair = connector.generatePKCECodePair();
     var authorizeUrl = authApiUrl + "?client_id=" + clientId +
 						"&scope=" + scope +
 						"&purpose_id=" + purpose_id +
-						"&code_challenge=" + pkceCodePair.codeChallenge +
+						//"&code_challenge=" + pkceCodePair.codeChallenge +
+						"&code_challenge=" + codeChallenge +
 						"&code_challenge_method=" + method +
 						"&redirect_uri=" + redirectUrl;
     //res.status(200).send(pkceCodePair.codeChallenge);
